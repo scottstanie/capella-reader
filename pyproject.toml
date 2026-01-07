@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "capella-reader"
@@ -24,7 +24,7 @@ classifiers = [
 license = { file = "LICENSE.txt" }
 
 # The version will be written into a version.py upon install, auto-generated
-# https://hatch.pypa.io/latest/version/#configuration
+# https://setuptools-scm.readthedocs.io/
 dynamic = ["version"]
 
 dependencies = ["numpy", "pydantic>=2", "tifffile"]
@@ -125,12 +125,11 @@ curl -L -o tests/data/CAPELLA_C14_SM_SLC_HH_20240626150051_20240626150055.tif ht
 curl -L -o tests/data/CAPELLA_C14_SM_SLC_HH_20240629134910_20240629134915.tif https://capella-open-data.s3.amazonaws.com/data/2024/6/29/CAPELLA_C14_SM_SLC_HH_20240629134910_20240629134915/CAPELLA_C14_SM_SLC_HH_20240629134910_20240629134915.tif
 """, description = "Download Capella SLC test data files" }
 
-[tool.hatch.version]
-source = "vcs"
-[tool.hatch.version.raw-options]
-version_scheme = "no-guess-dev"
-[tool.hatch.build.hooks.vcs]
-version-file = "src/capella_reader/_version.py"
+[tool.setuptools]
+packages = { find = { where = ["src"] } }
+
+[tool.setuptools_scm]
+write_to = "src/capella_reader/_version.py"
 
 [tool.ruff]
 src = ["src"]

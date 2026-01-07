@@ -2878,27 +2878,27 @@ packages:
   timestamp: 1741554591855
 - pypi: ./
   name: capella-reader
-  version: 0.0.post1.dev80+g7426bc8d5
-  sha256: bd993ee39c73324719198ab25d022109e8aadfe75f4d5a92e48dec73d36d0a7e
+  version: 0.1.dev14+g914123a23
+  sha256: 1b366b24db43bddaace35954011a97cee71aa8d1f8929d0b78fdea452c4a0943
   requires_dist:
   - numpy
-  - pydantic
+  - pydantic>=2
   - tifffile
-  - matplotlib ; extra == 'docs'
-  - mkdocs ; extra == 'docs'
-  - mkdocs-gen-files ; extra == 'docs'
-  - mkdocs-jupyter ; extra == 'docs'
-  - mkdocs-literate-nav ; extra == 'docs'
-  - mkdocs-material ; extra == 'docs'
-  - mkdocs-section-index ; extra == 'docs'
-  - mkdocstrings[python] ; extra == 'docs'
-  - pymdown-extensions ; extra == 'docs'
-  - ipython ; extra == 'test'
   - pre-commit ; extra == 'test'
   - pytest ; extra == 'test'
   - pytest-cov ; extra == 'test'
   - pytest-randomly ; extra == 'test'
   - ruff ; extra == 'test'
+  - ipython ; extra == 'test'
+  - mkdocs ; extra == 'docs'
+  - mkdocs-gen-files ; extra == 'docs'
+  - mkdocs-jupyter ; extra == 'docs'
+  - mkdocs-literate-nav ; extra == 'docs'
+  - mkdocs-material ; extra == 'docs'
+  - pymdown-extensions ; extra == 'docs'
+  - matplotlib ; extra == 'docs'
+  - mkdocstrings[python] ; extra == 'docs'
+  - mkdocs-section-index ; extra == 'docs'
   requires_python: '>=3.10'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/certifi-2025.11.12-pyhd8ed1ab_0.conda

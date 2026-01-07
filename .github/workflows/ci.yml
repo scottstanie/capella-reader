@@ -1,4 +1,4 @@
-name: Pytest, build docker image, push to GHCR
+name: CI
 
 on: [pull_request, push]
 
@@ -15,7 +15,6 @@ jobs:
       # Setup with pixi rather than GHA
       matrix:
         os: [ubuntu-latest, macos-latest]
-        environment: [test]
       fail-fast: false
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -25,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       # https://pixi.prefix.dev/dev/integration/ci/github_actions/
       - uses: prefix-dev/setup-pixi@v0.9.3
         with:
@@ -32,5 +33,5 @@ jobs:
           cache: true
           # Only save caches on main
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          auth-host: prefix.dev
-      - run: pixi run test
+          environments: all
+      - run: pixi run --environment all test
