@@ -90,4 +90,4 @@ def test_cli_bounds_json_output(tmp_path, sample_metadata_dict, capsys):
     captured = capsys.readouterr()
 
     assert exit_code == 0
-    assert captured.out.strip() == "[\n  10.0,\n...0,\n  50.0\n]"
+    assert captured.out.strip() == "[\n  10.0,\n  20.0,\n  40.0,\n  50.0\n]"
