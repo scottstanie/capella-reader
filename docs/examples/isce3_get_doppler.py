@@ -204,8 +204,8 @@ def main():
     print(f"Number of state vectors: {len(slc.collect.state.state_vectors)}")
     print(f"Number of pointing samples: {len(slc.collect.pointing)}")
 
-    orbit = get_orbit(slc.collect.state.state_vectors, ref_epoch=slc.ref_epoch)
-    attitude = get_attitude(slc.collect.pointing, ref_epoch=slc.ref_epoch)
+    orbit = get_orbit(slc)
+    attitude = get_attitude(slc)
 
     print("\nComputing Doppler LUT from attitude...")
 
