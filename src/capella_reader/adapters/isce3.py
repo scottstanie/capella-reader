@@ -18,6 +18,8 @@ get_attitude
 
 """
 
+from __future__ import annotations
+
 import warnings
 from collections import Counter
 from collections.abc import Sequence
@@ -113,6 +115,10 @@ def get_orbit(
         if ref_epoch is None:
             # Use the slc's epoch if we passed SLC but not explicit epoch
             ref_epoch = slc.ref_epoch
+
+    if not state_vectors:
+        msg = "No state vectors found in Capella metadata"
+        raise ValueError(msg)
 
     # isce3 will throw the following for default collects:
     # ValueError: non-uniform spacing between state vectors encountered ...
