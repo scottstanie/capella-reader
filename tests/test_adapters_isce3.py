@@ -41,7 +41,7 @@ class TestGetOrbit:
             ),
         ]
 
-        orbit = get_orbit(svs)
+        orbit = get_orbit(state_vectors=svs)
 
         assert isinstance(orbit, isce3.core.Orbit)
         assert orbit.size == len(svs)
@@ -67,14 +67,14 @@ class TestGetOrbit:
         ]
 
         with pytest.warns(UserWarning, match="not uniformly sampled"):
-            orbit = get_orbit(svs)
+            orbit = get_orbit(state_vectors=svs)
 
         assert isinstance(orbit, isce3.core.Orbit)
 
     def test_empty_state_vectors(self):
         """Test that empty state vectors raise ValueError."""
         with pytest.raises(ValueError, match="No state vectors"):
-            get_orbit([])
+            get_orbit(state_vectors=[])
 
     def test_reference_epoch(self):
         """Test that reference epoch is set to first state vector time."""
@@ -91,7 +91,7 @@ class TestGetOrbit:
             ),
         ]
 
-        orbit = get_orbit(svs)
+        orbit = get_orbit(state_vectors=svs)
 
         ref_epoch_str = str(orbit.reference_epoch)
         assert "2024-01-01" in ref_epoch_str
@@ -101,7 +101,7 @@ class TestGetOrbit:
         """Test that SLC input defaults to slc.ref_epoch."""
         slc = CapellaSLC.from_file(metadata_file)
 
-        orbit = get_orbit(slc=slc)
+        orbit = get_orbit(slc)
 
         ref_epoch_str = str(orbit.reference_epoch)
         expected = str(slc.ref_epoch).strip("Z")
@@ -143,7 +143,7 @@ class TestGetOrbit:
         # This should not raise ValueError from ISCE3
         # The interpolate_orbit should fix the spacing to be truly uniform
         with pytest.warns(UserWarning, match="not uniformly sampled"):
-            orbit = get_orbit(svs)
+            orbit = get_orbit(state_vectors=svs)
 
         # Verify the orbit was created successfully
         assert isinstance(orbit, isce3.core.Orbit)
@@ -195,7 +195,7 @@ def test_get_doppler_poly(metadata_file) -> None:
 
 def test_get_attitude(metadata_file) -> None:
     slc = CapellaSLC.from_file(metadata_file)
-    attitude = isce3_adapter.get_attitude(slc=slc)
+    attitude = isce3_adapter.get_attitude(slc)
     assert attitude is not None
 
     pointing_samples = slc.collect.pointing

@@ -79,8 +79,8 @@ def get_radar_grid(slc: CapellaSLC) -> isce3.product.RadarGridParameters:
 
 
 def get_orbit(
-    state_vectors: Sequence[StateVector] | None = None,
     slc: CapellaSLC | None = None,
+    state_vectors: Sequence[StateVector] | None = None,
     ref_epoch: Time | None = None,
 ) -> isce3.core.Orbit:
     """Create ISCE3 orbit from Capella state vectors or SLC.
@@ -150,8 +150,8 @@ def get_orbit(
 
 
 def get_attitude(
-    pointing_samples: Sequence[PointingSample] | None = None,
     slc: CapellaSLC | None = None,
+    pointing_samples: Sequence[PointingSample] | None = None,
     ref_epoch: Time | None = None,
 ) -> isce3.core.Attitude:
     """Create ISCE3 attitude from Capella pointing samples or SLC.
