@@ -101,7 +101,8 @@ class TestGetOrbit:
         """Test that SLC input defaults to slc.ref_epoch."""
         slc = CapellaSLC.from_file(metadata_file)
 
-        orbit = get_orbit(slc)
+        with pytest.warns(UserWarning, match="not uniformly sampled"):
+            orbit = get_orbit(slc)
 
         ref_epoch_str = str(orbit.reference_epoch)
         expected = str(slc.ref_epoch).strip("Z")
