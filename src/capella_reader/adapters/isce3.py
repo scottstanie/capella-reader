@@ -8,17 +8,15 @@ Functions
 get_radar_grid
     Create ISCE3 `RadarGridParameters` from Capella SLC
 get_orbit
-    Create ISCE3 `Orbit` from Capella SLC state vectors
+    Create ISCE3 `Orbit` from Capella SLC or state vectors
 get_doppler_poly
     Create ISCE3 `Poly2d` for Doppler centroid frequency
 get_doppler_lut2d
     Create ISCE3 `LUT2d` for Doppler centroid frequency
 get_attitude
-    Create ISCE3 `Attitude` from Capella pointing samples
+    Create ISCE3 `Attitude` from Capella SLC or pointing samples
 
 """
-
-from __future__ import annotations
 
 import warnings
 from collections import Counter
@@ -30,11 +28,10 @@ import numpy as np
 from capella_reader._time import Time
 from capella_reader.enums import LookSide
 from capella_reader.orbit import PointingSample, StateVector
+from capella_reader.slc import CapellaSLC
 
 if TYPE_CHECKING:
     import isce3
-
-    from capella_reader.slc import CapellaSLC
 
 
 C_LIGHT = 299792458.0
@@ -80,17 +77,22 @@ def get_radar_grid(slc: CapellaSLC) -> isce3.product.RadarGridParameters:
 
 
 def get_orbit(
-    state_vectors: Sequence[StateVector], ref_epoch: Time | None = None
+    state_vectors: Sequence[StateVector] | None = None,
+    slc: CapellaSLC | None = None,
+    ref_epoch: Time | None = None,
 ) -> isce3.core.Orbit:
-    """Create ISCE3 orbit from Capella state vectors.
+    """Create ISCE3 orbit from Capella state vectors or SLC.
 
     Parameters
     ----------
     state_vectors : Sequence[StateVector]
         Sequence of StateVector objects from Capella metadata
+    slc : CapellaSLC
+        Alternative input to `state_vectors`: Capella SLC object.
     ref_epoch : Time, optional
         Reference epoch to use for the orbit.
-        If None, uses the first state vector's time.
+        If None and a Capella SLC is provided, uses `slc.ref_epoch`.
+        If None and a sequence is provided, uses the first state vector's time.
 
     Returns
     -------
@@ -102,9 +104,15 @@ def get_orbit(
 
     from capella_reader.orbit import interpolate_orbit, is_uniformly_sampled
 
-    if not state_vectors:
-        msg = "No state vectors found in Capella metadata"
-        raise ValueError(msg)
+    if state_vectors is None:
+        if slc is None:
+            msg = "Must provide either slc or pointing_samples"
+            raise ValueError(msg)
+
+        state_vectors = slc.collect.state.state_vectors
+        if ref_epoch is None:
+            # Use the slc's epoch if we passed SLC but not explicit epoch
+            ref_epoch = slc.ref_epoch
 
     # isce3 will throw the following for default collects:
     # ValueError: non-uniform spacing between state vectors encountered ...
@@ -136,17 +144,23 @@ def get_orbit(
 
 
 def get_attitude(
-    pointing_samples: Sequence[PointingSample], ref_epoch: Time | None = None
+    pointing_samples: Sequence[PointingSample] | None = None,
+    slc: CapellaSLC | None = None,
+    ref_epoch: Time | None = None,
 ) -> isce3.core.Attitude:
-    """Create ISCE3 attitude from Capella pointing samples.
+    """Create ISCE3 attitude from Capella pointing samples or SLC.
 
     Parameters
     ----------
-    pointing_samples : Sequence[PointingSample]
-        Sequence of PointingSample objects from Capella metadata
+    pointing_samples : Sequence[PointingSample] or CapellaSLC
+        Sequence of PointingSample objects from Capella metadata, or a Capella
+        SLC object containing those samples.
+    slc : CapellaSLC
+        Alternative input to `state_vectors`: Capella SLC object.
     ref_epoch : Time, optional
         Reference epoch to use for the attitude.
-        If None, uses the first pointing sample's time.
+        If None and a Capella SLC is provided, uses `slc.ref_epoch`.
+        If None and a sequence is provided, uses the first pointing sample's time.
 
     Returns
     -------
@@ -164,6 +178,15 @@ def get_attitude(
 
     """
     import isce3
+
+    if pointing_samples is None:
+        if slc is None:
+            msg = "Must provide either slc or pointing_samples"
+            raise ValueError(msg)
+        pointing_samples = slc.collect.pointing
+        # Use the slc's epoch if we passed SLC but not explicit epoch
+        if ref_epoch is None:
+            ref_epoch = slc.ref_epoch
 
     if not pointing_samples:
         msg = "No pointing samples found in Capella metadata"
