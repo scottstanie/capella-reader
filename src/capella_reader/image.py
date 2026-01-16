@@ -265,10 +265,10 @@ class ImageMetadata(BaseModel):
         description="Reference target position in ECEF [m], if provided",
     )
 
-    azimuth_beam_pattern_corrected: bool = Field(
+    azimuth_beam_pattern_corrected: bool | None = Field(
         ..., description="True if azimuth beam pattern was corrected"
     )
-    elevation_beam_pattern_corrected: bool = Field(
+    elevation_beam_pattern_corrected: bool | None = Field(
         ..., description="True if elevation beam pattern was corrected"
     )
 
