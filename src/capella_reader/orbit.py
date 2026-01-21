@@ -119,14 +119,18 @@ class PointingSample(BaseModel):
 class Antenna(BaseModel):
     """Antenna parameters."""
 
-    azimuth_beamwidth: float = Field(..., description="Azimuth 3-dB beamwidth [rad]")
+    azimuth_beamwidth: float = Field(..., description="3 dB azimuth beamwidth [rad]")
     elevation_beamwidth: float = Field(
-        ..., description="Elevation 3-dB beamwidth [rad]"
+        ..., description="3 dB elevation beamwidth [rad]"
     )
-    gain: float = Field(..., description="Antenna boresight gain [dB]")
+    gain: float = Field(..., description="One-way antenna boresight gain [dBi]")
     beam_pattern: Poly2D = Field(
         ...,
-        description="2D polynomial approximation of antenna gain vs. angle",
+        description=(
+            "A 2D polynomial that gives normalized (maximum 0 dBi) one-way beam "
+            "pattern as a function of off-boresight angle in elevation (first "
+            "variable, radians) and azimuth (second variable, radians), in dBi"
+        ),
     )
 
 
