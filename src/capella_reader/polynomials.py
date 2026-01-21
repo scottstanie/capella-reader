@@ -14,6 +14,10 @@ from typing_extensions import Self
 class Poly1D(BaseModel, arbitrary_types_allowed=True):
     """1D polynomial p(x) = sum c[i] x^i using numpy.polynomial.Polynomial."""
 
+    type: str = Field(
+        default="standard",
+        description="Polynomial type: 'standard', 'chebyshev', or 'legendre'",
+    )
     degree: int = Field(..., description="Polynomial degree (order)")
     coefficients: np.ndarray = Field(
         ...,
@@ -46,6 +50,10 @@ class Poly1D(BaseModel, arbitrary_types_allowed=True):
 class Poly2D(BaseModel, arbitrary_types_allowed=True):
     """2D polynomial p(x,y) = sum c[i,j] x^i y^j."""
 
+    type: str = Field(
+        default="standard",
+        description="Polynomial type: 'standard', 'chebyshev', or 'legendre'",
+    )
     degree: tuple[int, int] = Field(..., description="Polynomial degree for (x, y)")
     coefficients: np.ndarray = Field(
         ...,

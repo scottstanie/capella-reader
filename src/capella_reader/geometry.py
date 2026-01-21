@@ -75,12 +75,16 @@ class ECEFVelocity(BaseModel):
 
 
 class AttitudeQuaternion(BaseModel):
-    """Spacecraft attitude quaternion components (order as given in metadata)."""
+    """Attitude quaternion: rotation from coordinate system to antenna frame.
 
-    q0: float = Field(..., description="Quaternion component q0")
-    q1: float = Field(..., description="Quaternion component q1")
-    q2: float = Field(..., description="Quaternion component q2")
-    q3: float = Field(..., description="Quaternion component q3")
+    The antenna frame is defined as: Z is boresight, X and Y are the reference
+    azimuth and elevation directions respectively.
+    """
+
+    q0: float = Field(..., description="Quaternion scalar component (w)")
+    q1: float = Field(..., description="Quaternion vector component x")
+    q2: float = Field(..., description="Quaternion vector component y")
+    q3: float = Field(..., description="Quaternion vector component z")
 
     @classmethod
     def from_list(cls, v: list[float]) -> AttitudeQuaternion:

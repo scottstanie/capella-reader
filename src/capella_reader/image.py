@@ -283,9 +283,19 @@ class ImageMetadata(BaseModel):
     )
 
     nesz_polynomial: Poly1D = Field(
-        ..., description="Noise Equivalent Sigma Zero (NESZ) as 1D polynomial"
+        ...,
+        description=(
+            "A 1D polynomial of Noise Equivalent Sigma Zero (NESZ) in dB, as a function"
+            " of absolute slant range in meters"
+        ),
     )
-    nesz_peak: float = Field(..., description="Peak NESZ [dB]")
+    nesz_peak: float = Field(
+        ...,
+        description=(
+            "Noise Equivalent Sigma Zero (NESZ) in dB at the peak of the antenna gain "
+            "pattern (i.e., the minimum NESZ in the image)"
+        ),
+    )
     terrain_models: TerrainModels | None = Field(
         None,
         description="Terrain models used for focusing/geolocation, if provided",
@@ -297,7 +307,9 @@ class ImageMetadata(BaseModel):
     frequency_doppler_centroid_polynomial: Poly2D = Field(
         ...,
         description=(
-            "Doppler centroid frequency as 2D polynomial of image coordinates [Hz]"
+            "A 2D polynomial mapping range and azimuth time to Doppler centroid "
+            "frequency in Hz. The range variable is slant range distance in meters. "
+            "The azimuth variable is seconds since first_line_time."
         ),
     )
 

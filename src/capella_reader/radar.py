@@ -38,7 +38,12 @@ class PRFEntry(BaseModel):
 class Radar(BaseModel):
     """Radar configuration."""
 
-    rank: int = Field(..., description="Internal radar configuration rank")
+    rank: int = Field(
+        ...,
+        description=(
+            "Number of pulse repetition intervals (PRIs) between transmit and receive"
+        ),
+    )
     center_frequency: float = Field(..., description="Radar carrier frequency [Hz]")
     pointing: LookSide = Field(..., description="Look side of platform")
     sampling_frequency: float = Field(

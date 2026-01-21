@@ -2878,12 +2878,13 @@ packages:
   timestamp: 1741554591855
 - pypi: ./
   name: capella-reader
-  version: 0.1.dev14+g914123a23
-  sha256: 1b366b24db43bddaace35954011a97cee71aa8d1f8929d0b78fdea452c4a0943
+  version: 0.1.2.dev1+gdd463ec37.d20260121
+  sha256: ead8c06f6a14e11df3ab77a12906088564c642d330a03eab56fef1d6419701f0
   requires_dist:
   - numpy
   - pydantic>=2
   - tifffile
+  - typing-extensions
   - pre-commit ; extra == 'test'
   - pytest ; extra == 'test'
   - pytest-cov ; extra == 'test'
