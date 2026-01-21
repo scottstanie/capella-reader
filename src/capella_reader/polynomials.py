@@ -40,6 +40,9 @@ class Poly1D(BaseModel, arbitrary_types_allowed=True):
 
     def as_numpy_polynomial(self) -> Polynomial:
         """Convert to numpy.polynomial.Polynomial."""
+        if self.type != "standard":
+            msg = f"Only 'standard' polynomial type is supported, got '{self.type}'"
+            raise NotImplementedError(msg)
         return Polynomial(self.coefficients)
 
     def __call__(self, x: float | np.ndarray) -> float | np.ndarray:
@@ -89,6 +92,9 @@ class Poly2D(BaseModel, arbitrary_types_allowed=True):
 
         p(x,y) = sum_{i,j} c[i,j] * x^i * y^j
         """
+        if self.type != "standard":
+            msg = f"Only 'standard' polynomial type is supported, got '{self.type}'"
+            raise NotImplementedError(msg)
         x_arr = np.asanyarray(x)
         y_arr = np.asanyarray(y)
         return polyval2d(x_arr, y_arr, self.coefficients)
