@@ -65,7 +65,7 @@ class SlantPlaneGeometry(BaseModel):
         ...,
         description=(
             "A 2D polynomial mapping range and azimuth time to doppler centroid "
-            "frequency in Hz used to compute the image geometry. Notice that the "
+            "frequency in Hz used to compute the image geometry. The "
             "range dependence of the DC polynomial uses range distance. The azimuth "
             "variable is seconds since first_line_time."
         ),
