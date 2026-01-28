@@ -312,15 +312,17 @@ def get_doppler_lut2d(
     # y axis: az time in seconds since radar-grid reference epoch
     sensing_start_seconds = (slc.sensing_start - slc.ref_epoch).total_seconds()
     az_idx = np.linspace(-1, n_lines + 1, int(n_az))
-    az_rel = az_idx * slc.delta_line_time  # seconds since first line time
+    # Capella's polynomial is in seconds since first line time
+    az_since_start = az_idx * slc.delta_line_time  # seconds since first line time
 
-    az_times = sensing_start_seconds + az_rel  # seconds since ref_epoch
-    az_times = np.asarray(az_times, dtype=np.float64)
-
-    # evaluate Capella poly: f_dc(az_rel, range)
-    Y, X = np.meshgrid(az_times, slant_ranges, indexing="ij")
+    # evaluate Capella poly: f_dc(az_since_start, range)
+    Y, X = np.meshgrid(az_since_start, slant_ranges, indexing="ij")
     data = slc.frequency_doppler_centroid_polynomial(Y, X)  # (len(az), len(rg))
     data = np.ascontiguousarray(data, dtype=np.float64)
 
+    az_since_epoch = sensing_start_seconds + az_since_start  # seconds since ref_epoch
+    az_since_epoch = np.asarray(az_since_epoch, dtype=np.float64)
     # LUT2d wants (xcoord, ycoord, data[y, x])
-    return isce3.core.LUT2d(slant_ranges, az_times, data, method=method, b_error=True)
+    return isce3.core.LUT2d(
+        slant_ranges, az_since_epoch, data, method=method, b_error=True
+    )
