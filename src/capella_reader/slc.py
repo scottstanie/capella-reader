@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import IO, NamedTuple, cast
 
-import fsspec
 import numpy as np
 import pydantic
 import tifffile
@@ -23,11 +24,35 @@ from capella_reader.polynomials import Poly2D
 C_LIGHT = 299792458.0
 
 
+def _is_remote_path(path: str) -> bool:
+    """Check if a path is a remote URL (http, https, s3, gs, etc.)."""
+    return "://" in path and not path.startswith("file://")
+
+
 def _get_suffix(path: str) -> str:
     """Get file suffix from a path string, handling both local and remote paths."""
     # Remove query string if present (for URLs like s3://bucket/file.tif?param=value)
     path_without_query = path.split("?")[0]
     return Path(path_without_query).suffix
+
+
+@contextmanager
+def _open_file(path: str, mode: str = "rb") -> Iterator[IO]:
+    """Open a file, using fsspec for remote paths or standard open for local paths."""
+    if _is_remote_path(path):
+        try:
+            import fsspec
+        except ImportError as e:
+            msg = (
+                "fsspec is required to read remote files. "
+                "Install it with: pip install capella-reader[fsspec]"
+            )
+            raise ImportError(msg) from e
+        with fsspec.open(path, mode=mode) as f:
+            yield cast(IO, f)
+    else:
+        with open(path, mode=mode) as f:
+            yield f
 
 
 class CapellaParseError(ValueError):
@@ -109,7 +134,7 @@ class CapellaSLC(BaseModel):
     def _read_tiff_metadata(path: str) -> dict:
         """Read metadata from a TIFF file (local or remote)."""
         try:
-            with fsspec.open(path) as f, tifffile.TiffFile(cast(IO[bytes], f)) as tif:
+            with _open_file(path) as f, tifffile.TiffFile(f) as tif:
                 image_description_tag: str = (
                     tif.pages[0].tags["ImageDescription"].value  # type: ignore[union-attr]
                 )
@@ -121,8 +146,8 @@ class CapellaSLC(BaseModel):
     @staticmethod
     def _read_json_metadata(path: str) -> dict:
         """Read metadata from a JSON file (local or remote)."""
-        with fsspec.open(path, mode="r") as f:
-            return json.load(cast(IO[str], f))
+        with _open_file(path, mode="r") as f:
+            return json.load(f)
 
     @property
     def collect(self) -> Collect:
@@ -212,10 +237,7 @@ class CapellaSLC(BaseModel):
             msg = "No GCPs available in JSON metadata files"
             raise ValueError(msg)
 
-        with (
-            fsspec.open(self.path) as f,
-            tifffile.TiffFile(cast(IO[bytes], f)) as tif,
-        ):
+        with _open_file(self.path) as f, tifffile.TiffFile(f) as tif:
             gcp_arr: np.ndarray = tif.pages[0].tags["ModelTiepointTag"].value  # type: ignore[union-attr]
         # Delete the 3rd column ("3rd" dim of the 2D image)
         out: list[GroundControlPoint] = []

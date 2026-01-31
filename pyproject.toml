@@ -27,13 +27,15 @@ license = { file = "LICENSE.txt" }
 # https://setuptools-scm.readthedocs.io/
 dynamic = ["version"]
 
-dependencies = ["numpy", "pydantic>=2", "tifffile", "typing_extensions", "fsspec"]
+dependencies = ["numpy", "pydantic>=2", "tifffile", "typing_extensions"]
 
 [project.scripts]
 capella-reader = "capella_reader.cli:main"
 
 [project.optional-dependencies]
+fsspec = ["fsspec"]
 test = [
+  "fsspec",
   "pre-commit",
   "pytest",
   "pytest-cov",
@@ -199,3 +201,4 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 addopts = ""
 filterwarnings = ["error"]
+markers = ["network: marks tests as requiring network access (deselect with '-m \"not network\"')"]

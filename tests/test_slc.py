@@ -183,3 +183,32 @@ class TestCapellaSLC:
 
         with pytest.raises(ValueError, match="No GCPs available"):
             _ = slc.gcps
+
+
+REMOTE_TIF_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816.tif"
+REMOTE_JSON_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816_extended.json"
+
+
+@pytest.mark.network
+class TestCapellaSLCRemote:
+    """Tests for remote file reading with fsspec."""
+
+    def test_from_remote_tif(self):
+        """Test loading metadata from a remote TIFF file."""
+        slc = CapellaSLC.from_file(REMOTE_TIF_URL)
+
+        assert slc.path == REMOTE_TIF_URL
+        assert slc.meta.collect.platform == "capella-13"
+        assert slc.meta.product_type == "SLC"
+        assert slc.shape[0] > 0
+        assert slc.shape[1] > 0
+
+    def test_from_remote_json(self):
+        """Test loading metadata from a remote JSON file."""
+        slc = CapellaSLC.from_file(REMOTE_JSON_URL)
+
+        assert slc.path == REMOTE_JSON_URL
+        assert slc.meta.collect.platform == "capella-13"
+        assert slc.meta.product_type == "SLC"
+        assert slc.shape[0] > 0
+        assert slc.shape[1] > 0
