@@ -55,6 +55,22 @@ meta = CapellaSLCMetadata.model_validate(data)
 json_str = meta.model_dump_json(indent=2)
 ```
 
+### Remote Files
+
+With the optional `fsspec` dependency, you can read directly from URLs:
+
+```bash
+pip install capella-reader[fsspec]
+
+capella-reader bounds https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816.tif
+# -121.92123 37.27596 -121.81966 37.36195
+```
+
+```python
+# Or from python:
+slc = CapellaSLC.from_file("https://capella-open-data.s3.amazonaws.com/.../file.tif")
+```
+
 ## Examples
 
 The `docs/examples/` directory contains visualization scripts demonstrating orbit and image footprint analysis:

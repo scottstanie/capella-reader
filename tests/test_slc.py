@@ -189,6 +189,17 @@ REMOTE_TIF_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPEL
 REMOTE_JSON_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816_extended.json"
 
 
+def _has_aiohttp() -> bool:
+    """Check if aiohttp is available (required by fsspec for https:// URLs)."""
+    try:
+        import aiohttp  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
+
+
+@pytest.mark.skipif(not _has_aiohttp(), reason="aiohttp required for fsspec https")
 @pytest.mark.network
 class TestCapellaSLCRemote:
     """Tests for remote file reading with fsspec."""
