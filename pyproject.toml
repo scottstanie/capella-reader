@@ -33,7 +33,9 @@ dependencies = ["numpy", "pydantic>=2", "tifffile", "typing_extensions"]
 capella-reader = "capella_reader.cli:main"
 
 [project.optional-dependencies]
+fsspec = ["fsspec[http]"]
 test = [
+  "fsspec[http]",
   "pre-commit",
   "pytest",
   "pytest-cov",
@@ -72,6 +74,8 @@ numpy = ">=2"
 pydantic = ">=2"
 tifffile = ">=2025"
 typing_extensions = "*"
+fsspec = "*"
+aiohttp = "*"  # Required by fsspec for https:// URLs
 
 [tool.pixi.feature.isce3.dependencies]
 isce3 = "*"
@@ -198,3 +202,4 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 addopts = ""
 filterwarnings = ["error"]
+markers = ["network: marks tests as requiring network access (deselect with '-m \"not network\"')"]

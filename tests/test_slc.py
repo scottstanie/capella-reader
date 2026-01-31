@@ -1,7 +1,6 @@
 """Tests for CapellaSLC wrapper."""
 
 import json
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -22,29 +21,29 @@ class TestCapellaSLC:
     def test_creation(self, sample_metadata_dict):
         """Test creating a CapellaSLC object."""
         meta = CapellaSLCMetadata.model_validate(sample_metadata_dict)
-        slc = CapellaSLC(path=Path("/fake/path.tif"), meta=meta)
+        slc = CapellaSLC(path="/fake/path.tif", meta=meta)
 
-        assert slc.path == Path("/fake/path.tif")
+        assert slc.path == "/fake/path.tif"
         assert isinstance(slc.meta, CapellaSLCMetadata)
 
     def test_shape_property(self, sample_metadata_dict):
         """Test the shape property."""
         meta = CapellaSLCMetadata.model_validate(sample_metadata_dict)
-        slc = CapellaSLC(path=Path("/fake/path.tif"), meta=meta)
+        slc = CapellaSLC(path="/fake/path.tif", meta=meta)
 
         assert slc.shape == (1000, 1000)
 
     def test_dtype_property(self, sample_metadata_dict):
         """Test the dtype property."""
         meta = CapellaSLCMetadata.model_validate(sample_metadata_dict)
-        slc = CapellaSLC(path=Path("/fake/path.tif"), meta=meta)
+        slc = CapellaSLC(path="/fake/path.tif", meta=meta)
 
         assert slc.dtype == np.dtype(np.complex64)
 
     def test_metadata_properties(self, sample_metadata_dict):
         """Test derived properties from metadata."""
         meta = CapellaSLCMetadata.model_validate(sample_metadata_dict)
-        slc = CapellaSLC(path=Path("/fake/path.tif"), meta=meta)
+        slc = CapellaSLC(path="/fake/path.tif", meta=meta)
 
         assert slc.range_to_first_sample == 800000.0
         assert slc.delta_range_sample == 0.5
@@ -81,7 +80,7 @@ class TestCapellaSLC:
 
         slc = CapellaSLC.from_file(test_file)
 
-        assert slc.path == test_file
+        assert slc.path == str(test_file)
         assert isinstance(slc.meta, CapellaSLCMetadata)
         assert slc.meta.software_version == sample_metadata_dict["software_version"]
 
@@ -92,12 +91,12 @@ class TestCapellaSLC:
 
         slc = CapellaSLC.from_file(test_file)
 
-        assert slc.path == test_file
+        assert slc.path == str(test_file)
         assert slc.meta.software_version == sample_metadata_dict["software_version"]
 
     def test_from_real_metadata_files(self, metadata_file):
         slc = CapellaSLC.from_file(metadata_file)
-        assert slc.path == metadata_file
+        assert slc.path == str(metadata_file)
         assert slc.delta_range_sample > 0.0
         if slc.meta.collect.image.is_slant_plane:
             # Does not exist in pfa
@@ -180,7 +179,47 @@ class TestCapellaSLC:
     def test_gcps_unavailable_for_json(self, sample_metadata_dict):
         """Test that JSON-backed SLCs do not expose GCPs."""
         meta = CapellaSLCMetadata.model_validate(sample_metadata_dict)
-        slc = CapellaSLC(path=Path("/fake/path.json"), meta=meta)
+        slc = CapellaSLC(path="/fake/path.json", meta=meta)
 
         with pytest.raises(ValueError, match="No GCPs available"):
             _ = slc.gcps
+
+
+REMOTE_TIF_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816.tif"
+REMOTE_JSON_URL = "https://capella-open-data.s3.amazonaws.com/data/2025/5/6/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816/CAPELLA_C13_SP_SLC_HH_20250506043806_20250506043816_extended.json"
+
+
+def _has_aiohttp() -> bool:
+    """Check if aiohttp is available (required by fsspec for https:// URLs)."""
+    try:
+        import aiohttp  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
+
+
+@pytest.mark.skipif(not _has_aiohttp(), reason="aiohttp required for fsspec https")
+@pytest.mark.network
+class TestCapellaSLCRemote:
+    """Tests for remote file reading with fsspec."""
+
+    def test_from_remote_tif(self):
+        """Test loading metadata from a remote TIFF file."""
+        slc = CapellaSLC.from_file(REMOTE_TIF_URL)
+
+        assert slc.path == REMOTE_TIF_URL
+        assert slc.meta.collect.platform == "capella-13"
+        assert slc.meta.product_type == "SLC"
+        assert slc.shape[0] > 0
+        assert slc.shape[1] > 0
+
+    def test_from_remote_json(self):
+        """Test loading metadata from a remote JSON file."""
+        slc = CapellaSLC.from_file(REMOTE_JSON_URL)
+
+        assert slc.path == REMOTE_JSON_URL
+        assert slc.meta.collect.platform == "capella-13"
+        assert slc.meta.product_type == "SLC"
+        assert slc.shape[0] > 0
+        assert slc.shape[1] > 0
