@@ -16,12 +16,12 @@ class Collect(BaseModel):
     start_timestamp: Time = Field(..., description="Collect start time (UTC)")
     stop_timestamp: Time = Field(..., description="Collect stop time (UTC)")
 
-    local_datetime: str = Field(
-        ...,
+    local_datetime: str | None = Field(
+        None,
         description="String containing formatted local time at scene center",
     )
-    local_timezone: str = Field(
-        ..., description="IANA or offset representation of local timezone"
+    local_timezone: str | None = Field(
+        None, description="IANA or offset representation of local timezone"
     )
 
     platform: str = Field(..., description="Satellite identifier (e.g. 'capella-14')")

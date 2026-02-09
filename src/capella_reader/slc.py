@@ -232,6 +232,9 @@ class CapellaSLC(BaseModel):
 
     @property
     def prf_average(self: Self) -> float:
+        if self.meta.collect.radar.prf is None:
+            msg = "PRF entries not available in metadata"
+            raise ValueError(msg)
         prf_values = [entry.prf for entry in self.meta.collect.radar.prf]
         return float(np.mean(prf_values))
 
@@ -278,5 +281,5 @@ class CapellaSLC(BaseModel):
         return (min(x), min(y), max(x), max(y))
 
     @property
-    def frequency_doppler_centroid_polynomial(self: Self) -> Poly2D:
+    def frequency_doppler_centroid_polynomial(self: Self) -> Poly2D | None:
         return self.meta.collect.image.frequency_doppler_centroid_polynomial

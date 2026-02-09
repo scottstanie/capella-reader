@@ -56,11 +56,11 @@ class Radar(BaseModel):
         ..., description="Receive polarization"
     )
 
-    time_varying_parameters: list[RadarTimeVaryingParams] = Field(
-        ...,
+    time_varying_parameters: list[RadarTimeVaryingParams] | None = Field(
+        None,
         description="Full time-varying radar configuration over the collect",
     )
-    prf: list[PRFEntry] = Field(
-        ...,
+    prf: list[PRFEntry] | None = Field(
+        None,
         description="Simplified time-varying PRF sequence",
     )

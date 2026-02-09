@@ -121,10 +121,10 @@ class TestWindow:
         assert window.parameters["beta"] == 0.46
         assert window.broadening_factor == 1.3
 
-    def test_validation_requires_fields(self):
-        """Test that required fields are validated."""
-        with pytest.raises(ValidationError):
-            Window(name="rectangular")
+    def test_broadening_factor_optional(self):
+        """Test that broadening_factor defaults to None when omitted."""
+        window = Window(name="rectangular")
+        assert window.broadening_factor is None
 
 
 class TestQuantization:

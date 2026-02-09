@@ -21,8 +21,8 @@ class Window(BaseModel):
         default_factory=dict,
         description="Window parameters (implementation-specific numeric values)",
     )
-    broadening_factor: float = Field(
-        ...,
+    broadening_factor: float | None = Field(
+        None,
         description="Main-lobe broadening factor due to windowing",
     )
 
@@ -197,8 +197,12 @@ class ImageMetadata(BaseModel):
     data_type: str = Field(
         ..., description="Underlying sample data type (e.g. 'CInt16')"
     )
-    length: float = Field(..., description="Approximate scene length on ground [m]")
-    width: float = Field(..., description="Approximate scene width on ground [m]")
+    length: float | None = Field(
+        None, description="Approximate scene length on ground [m]"
+    )
+    width: float | None = Field(
+        None, description="Approximate scene width on ground [m]"
+    )
     rows: int = Field(..., description="Number of image lines (azimuth dimension)")
     columns: int = Field(
         ..., description="Number of samples per line (range dimension)"
@@ -230,8 +234,8 @@ class ImageMetadata(BaseModel):
     )
 
     range_window: Window
-    processed_range_bandwidth: float = Field(
-        ..., description="Processed range bandwidth [Hz]"
+    processed_range_bandwidth: float | None = Field(
+        None, description="Processed range bandwidth [Hz]"
     )
     azimuth_window: Window
     processed_azimuth_bandwidth: float = Field(
@@ -244,8 +248,8 @@ class ImageMetadata(BaseModel):
     range_resolution: float = Field(
         ..., description="Nominal slant-range resolution [m]"
     )
-    ground_range_resolution: float = Field(
-        ..., description="Nominal ground-range resolution [m]"
+    ground_range_resolution: float | None = Field(
+        None, description="Nominal ground-range resolution [m]"
     )
     azimuth_resolution: float = Field(..., description="Nominal azimuth resolution [m]")
     ground_azimuth_resolution: float = Field(
@@ -278,8 +282,8 @@ class ImageMetadata(BaseModel):
     calibration: Literal["full", "partial", "limited", "none"] = Field(
         ..., description="Calibration level"
     )
-    calibration_id: str = Field(
-        ..., description="Identifier for calibration bundle used"
+    calibration_id: str | None = Field(
+        None, description="Identifier for calibration bundle used"
     )
 
     nesz_polynomial: Poly1D = Field(
@@ -304,8 +308,8 @@ class ImageMetadata(BaseModel):
     reference_doppler_centroid: float = Field(
         ..., description="Reference Doppler centroid at scene center [Hz]"
     )
-    frequency_doppler_centroid_polynomial: Poly2D = Field(
-        ...,
+    frequency_doppler_centroid_polynomial: Poly2D | None = Field(
+        None,
         description=(
             "A 2D polynomial mapping range and azimuth time to Doppler centroid "
             "frequency in Hz. The range variable is slant range distance in meters. "
@@ -313,7 +317,7 @@ class ImageMetadata(BaseModel):
         ),
     )
 
-    quantization: Quantization
+    quantization: Quantization | None = None
 
     @property
     def shape(self) -> tuple[int, int]:
