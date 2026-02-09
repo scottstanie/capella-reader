@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from capella_reader.collect import Collect
 
@@ -22,9 +22,18 @@ class CapellaSLCMetadata(BaseModel):
     processing_deployment: str = Field(
         ..., description="Deployment environment (e.g. 'production')"
     )
-    copyright: str = Field(..., description="Copyright notice")
-    license: str = Field(..., description="License information")
-    product_version: str = Field(..., description="Internal Capella product version")
+    copyright: str | None = Field(None, description="Copyright notice")
+    license: str | None = Field(None, description="License information")
+    product_version: str | None = Field(
+        None, description="Internal Capella product version"
+    )
     product_type: str = Field(..., description="Product type (e.g. 'SLC')")
+
+    @field_validator("product_version", mode="before")
+    @classmethod
+    def _coerce_product_version(cls, v: object) -> str | None:
+        if isinstance(v, int | float):
+            return str(v)
+        return v  # type: ignore[return-value]
 
     collect: Collect
