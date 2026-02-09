@@ -33,9 +33,9 @@ class Quantization(BaseModel):
     type: str = Field(
         ..., description="Quantization scheme, e.g. 'block_adaptive_quantization'"
     )
-    block_sample_size: int = Field(..., description="Samples per block")
-    mean_bits: int = Field(..., description="Bits used for block mean")
-    std_bits: int = Field(..., description="Bits used for block std-dev")
+    block_sample_size: int | None = Field(None, description="Samples per block")
+    mean_bits: int | None = Field(None, description="Bits used for block mean")
+    std_bits: int | None = Field(None, description="Bits used for block std-dev")
     sample_bits: int = Field(..., description="Bits per quantized sample")
 
 
@@ -252,8 +252,8 @@ class ImageMetadata(BaseModel):
         None, description="Nominal ground-range resolution [m]"
     )
     azimuth_resolution: float = Field(..., description="Nominal azimuth resolution [m]")
-    ground_azimuth_resolution: float = Field(
-        ..., description="Nominal ground azimuth resolution [m]"
+    ground_azimuth_resolution: float | None = Field(
+        None, description="Nominal ground azimuth resolution [m]"
     )
 
     azimuth_looks: float = Field(..., description="Number of looks in azimuth")
@@ -305,8 +305,8 @@ class ImageMetadata(BaseModel):
         description="Terrain models used for focusing/geolocation, if provided",
     )
 
-    reference_doppler_centroid: float = Field(
-        ..., description="Reference Doppler centroid at scene center [Hz]"
+    reference_doppler_centroid: float | None = Field(
+        None, description="Reference Doppler centroid at scene center [Hz]"
     )
     frequency_doppler_centroid_polynomial: Poly2D | None = Field(
         None,
