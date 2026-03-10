@@ -161,9 +161,11 @@ def test_cli_geometry_output(tmp_path, sample_metadata_dict, capsys):
     assert exit_code == 0
     assert "flight" in captured.out
     assert "look" in captured.out
-    # Wide diagram has labeled arrows
-    assert "| flight" in captured.out
-    assert "+--->  look" in captured.out
+    # N heading: flight arrow has ^ arrowhead
+    assert "^ flight" in captured.out
+    # E look: horizontal arrow with > arrowhead
+    assert ">" in captured.out
+    assert "look" in captured.out
     # Summary metadata
     assert "capella-14 | spotlight | HH" in captured.out
     assert "ascending | right-looking" in captured.out
@@ -197,9 +199,8 @@ def test_cli_geometry_descending_left(tmp_path, sample_metadata_dict, capsys):
     captured = capsys.readouterr()
 
     assert exit_code == 0
-    # Descending: flight arrow points down
-    assert "| flight" in captured.out
-    assert "v" in captured.out
-    # Left-looking from southward heading -> look is east
-    assert "+--->  look" in captured.out
+    # Descending: flight arrow points down with v arrowhead
+    assert "v flight" in captured.out
+    # Left-looking from southward heading -> look is east with > arrowhead
+    assert ">" in captured.out
     assert "descending | left-looking" in captured.out

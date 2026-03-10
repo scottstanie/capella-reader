@@ -191,19 +191,12 @@ def _place(canvas: list[list[str]], x: int, y: int, char: str) -> None:
 def render_geometry_wide(orientation: SceneOrientation, collect: Collect) -> str:
     """Render a wide, labeled ASCII diagram of flight and look directions.
 
-    Flight is always drawn on the vertical axis (up/down) and look on the
-    horizontal axis (left/right), matching the near-polar orbits of SAR
-    satellites. The actual heading angle is shown in the summary below.
+    Arrow endpoints are computed from the actual bearing using trigonometry so
+    that the diagram faithfully represents continuous angles (not just 8 or 16
+    quantised directions). A 2:1 column-to-row ratio approximates equal visual
+    scaling in a monospace font.
     """
-    heading = orientation.heading_deg
-    look_heading = orientation.look_deg
-
-    # Flight goes on vertical: up if mostly-north, down if mostly-south
-    vert_up = heading < 90 or heading >= 270
-    # Look goes on horizontal: right if mostly-east, left if mostly-west
-    horiz_right = look_heading < 180
-
-    diagram = _build_wide_diagram(vert_up, horiz_right)
+    diagram = _build_wide_diagram(orientation.heading_deg, orientation.look_deg)
 
     center_pixel = collect.image.center_pixel
     lat_rad, lon_rad = _ecef_to_geodetic(center_pixel.target_position)
@@ -215,36 +208,91 @@ def render_geometry_wide(orientation: SceneOrientation, collect: Collect) -> str
         f"{diagram}\n\n"
         f"  {collect.platform} | {collect.mode} | {pol}\n"
         f"  {orientation.orbit_direction} | {orientation.look_side.value}-looking\n"
-        f"  heading: {heading:.1f} deg ({orientation.heading_cardinal})"
-        f"  |  look: {look_heading:.1f} deg ({orientation.look_cardinal})\n"
+        f"  heading: {orientation.heading_deg:.1f} deg"
+        f" ({orientation.heading_cardinal})"
+        f"  |  look: {orientation.look_deg:.1f} deg"
+        f" ({orientation.look_cardinal})\n"
         f"  incidence: {center_pixel.incidence_angle:.1f} deg"
         f"  |  center: ({lat_deg:.2f}, {lon_deg:.2f})"
     )
 
 
-def _build_wide_diagram(vert_up: bool, horiz_right: bool) -> str:
-    """Build a wide ASCII diagram with labeled flight and look arrows."""
-    if horiz_right:
-        center_line = "  -----+--->  look"
-        pad = 7
+_ARROW_RADIUS = 3.0
+_ASPECT_RATIO = 2.0
+
+
+def _build_wide_diagram(heading_deg: float, look_deg: float) -> str:
+    """Build a wide ASCII diagram using continuous-angle arrows."""
+    rows, cols = 9, 35
+    cr, cc = 4, 17
+
+    canvas = [[" "] * cols for _ in range(rows)]
+
+    canvas[0][cc] = "N"
+    canvas[rows - 1][cc] = "S"
+    canvas[cr][cc] = "+"
+
+    _draw_continuous_arrow(canvas, cr, cc, heading_deg, "flight")
+    _draw_continuous_arrow(canvas, cr, cc, look_deg, "look")
+
+    # Fill vertical axis reference where not occupied by arrows
+    for r in range(1, rows - 1):
+        if r != cr and canvas[r][cc] == " ":
+            canvas[r][cc] = "|"
+
+    return "\n".join("".join(row).rstrip() for row in canvas)
+
+
+def _draw_continuous_arrow(
+    canvas: list[list[str]],
+    cr: int,
+    cc: int,
+    bearing_deg: float,
+    label: str,
+) -> None:
+    """Draw an arrow at an arbitrary bearing from the canvas center."""
+    rows = len(canvas)
+    cols = len(canvas[0])
+    theta = math.radians(bearing_deg)
+
+    end_r = round(cr - math.cos(theta) * _ARROW_RADIUS)
+    end_c = round(cc + math.sin(theta) * _ARROW_RADIUS * _ASPECT_RATIO)
+    end_r = max(1, min(rows - 2, end_r))
+    end_c = max(1, min(cols - 2, end_c))
+
+    dr = end_r - cr
+    dc = end_c - cc
+    steps = max(abs(dr), abs(dc), 1)
+
+    prev_r, prev_c = cr, cc
+    for i in range(1, steps + 1):
+        r = round(cr + dr * i / steps)
+        c = round(cc + dc * i / steps)
+        step_dr = r - prev_r
+        step_dc = c - prev_c
+        ch = _step_char(step_dr, step_dc, is_head=(i == steps))
+        if 0 <= r < rows and 0 <= c < cols and canvas[r][c] == " ":
+            canvas[r][c] = ch
+        prev_r, prev_c = r, c
+
+    # Place label near the arrow tip
+    if end_c >= cc:
+        start_c = end_c + 2
     else:
-        left_part = "  look  <----"
-        center_line = left_part + "+-----"
-        pad = len(left_part)
+        start_c = end_c - len(label) - 1
+    for i, ch in enumerate(label):
+        c = start_c + i
+        if 0 <= end_r < rows and 0 <= c < cols and canvas[end_r][c] == " ":
+            canvas[end_r][c] = ch
 
-    sp = " " * pad
 
-    top = [sp + "N"]
-    if vert_up:
-        top += [sp + "^", sp + "| flight", sp + "|"]
-    else:
-        top += [sp + "|", sp + "|", sp + "|"]
-
-    bot: list[str] = []
-    if not vert_up:
-        bot += [sp + "|", sp + "| flight", sp + "v"]
-    else:
-        bot += [sp + "|", sp + "|", sp + "|"]
-    bot.append(sp + "S")
-
-    return "\n".join([*top, center_line, *bot])
+def _step_char(dr: int, dc: int, *, is_head: bool) -> str:
+    if dc == 0 and dr == 0:
+        return "+"
+    if dc == 0:
+        return ("^" if dr < 0 else "v") if is_head else "|"
+    if dr == 0:
+        return (">" if dc > 0 else "<") if is_head else "-"
+    if (dr > 0) == (dc > 0):
+        return "\\"
+    return "/"
