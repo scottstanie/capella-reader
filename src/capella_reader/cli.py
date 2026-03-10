@@ -7,6 +7,11 @@ import json
 from collections.abc import Sequence
 from typing import Any
 
+from capella_reader.orientation import (
+    derive_scene_orientation,
+    render_geometry_wide,
+    render_orientation_ascii,
+)
 from capella_reader.slc import CapellaSLC
 
 
@@ -39,6 +44,22 @@ def _build_parser() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="Print bounds as a JSON array.",
+    )
+
+    direction_parser = subparsers.add_parser(
+        "direction",
+        help="Print north-up flight and look direction ASCII art.",
+    )
+    direction_parser.add_argument(
+        "path", help="Path to a Capella SLC GeoTIFF or JSON file."
+    )
+
+    geometry_parser = subparsers.add_parser(
+        "geometry",
+        help="Print wide labeled diagram of flight/look geometry with metadata.",
+    )
+    geometry_parser.add_argument(
+        "path", help="Path to a Capella SLC GeoTIFF or JSON file."
     )
 
     return parser
@@ -86,6 +107,20 @@ def _bounds(path: str, as_json: bool) -> int:
     return 0
 
 
+def _direction(path: str) -> int:
+    slc = CapellaSLC.from_file(path)
+    orientation = derive_scene_orientation(slc.collect)
+    print(render_orientation_ascii(orientation))
+    return 0
+
+
+def _geometry(path: str) -> int:
+    slc = CapellaSLC.from_file(path)
+    orientation = derive_scene_orientation(slc.collect)
+    print(render_geometry_wide(orientation, slc.collect))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the Capella reader CLI.
 
@@ -105,4 +140,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "dump":
         return _dump(args.path, args.full)
-    return _bounds(args.path, args.json)
+    if args.command == "bounds":
+        return _bounds(args.path, args.json)
+    if args.command == "geometry":
+        return _geometry(args.path)
+    return _direction(args.path)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

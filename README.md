@@ -71,6 +71,15 @@ capella-reader bounds https://capella-open-data.s3.amazonaws.com/data/2025/5/6/C
 slc = CapellaSLC.from_file("https://capella-open-data.s3.amazonaws.com/.../file.tif")
 ```
 
+### CLI Direction View
+
+You can also print a compact north-up sketch of the platform flight direction and radar
+look direction:
+
+```bash
+capella-reader direction tests/data/CAPELLA_C14_SM_SLC_HH_20240626150051_20240626150055.tif
+```
+
 ## Examples
 
 The `docs/examples/` directory contains visualization scripts demonstrating orbit and image footprint analysis:
