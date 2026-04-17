@@ -16,14 +16,16 @@ Reference Point (both in ECEF, both from the SLC metadata), and P is the
 ECEF position of the ground target underneath the pixel. Multiplying the
 deramped SLC by ``exp(-1j * phi_P)`` returns it to zero-Doppler geometry.
 
-See ``spotlight_phase_restoration.md`` for a longer explanation.
+This is a *preprocessing* step — feed the restored SLC into a normal
+coregistration pipeline (e.g. ``coregister_isce3.py``) afterwards. See
+``spotlight_phase_restoration.md`` for a longer explanation.
 
 Dependencies: isce3, capella-reader, numpy, gdal
 Optional: sardem (auto-downloads a Copernicus DEM if --dem-file is omitted)
 
 Usage
 -----
-python coregister_spotlight.py SLC.tif [--dem-file DEM.tif] [--output-dir ./restore]
+python restore_spotlight_phase.py SLC.tif [--dem-file DEM.tif] [--output-dir ./restore]
 
 """
 
@@ -53,7 +55,7 @@ DEFAULT_LINES_PER_BLOCK = 1024
 
 
 # ---------------------------------------------------------------------------
-# 1. DEM (same pattern as coregister_isce3.py)
+# 1. DEM
 # ---------------------------------------------------------------------------
 
 
@@ -89,23 +91,6 @@ def create_dem(slc_file: Path, output_dir: Path, dem_file: Path | None) -> Path:
 # 2. Per-pixel lon / lat / height via rdr2geo
 # ---------------------------------------------------------------------------
 
-# Note: rdr2geo.topo() in isce3 expects all layer rasters positionally. Only
-# the first three (x = lon, y = lat, z = height) are used by the phase
-# restoration below; the rest are scratch files.
-GEOMETRY_LAYERS = {
-    "x": gdal.GDT_Float64,
-    "y": gdal.GDT_Float64,
-    "z": gdal.GDT_Float64,
-    "incidence_angle": gdal.GDT_Float32,
-    "heading_angle": gdal.GDT_Float32,
-    "local_incidence_angle": gdal.GDT_Float32,
-    "local_psi": gdal.GDT_Float32,
-    "simulated_amplitude": gdal.GDT_Float32,
-    "layover_shadow": gdal.GDT_Byte,
-    "los_east": gdal.GDT_Float32,
-    "los_north": gdal.GDT_Float32,
-}
-
 
 def run_geometry(slc_file: Path, dem_file: Path, output_dir: Path) -> Path:
     """Compute lon / lat / height per pixel and return the 3-band geometry VRT."""
@@ -130,26 +115,33 @@ def run_geometry(slc_file: Path, dem_file: Path, output_dir: Path) -> Path:
         lines_per_block=1024,
     )
 
-    rasters = [
-        isce3.io.Raster(
+    def _layer(name: str) -> isce3.io.Raster:
+        return isce3.io.Raster(
             fsdecode(geom_dir / f"{name}.tif"),
             radar_grid.width,
             radar_grid.length,
             1,
-            dtype,
+            gdal.GDT_Float64,
             "GTiff",
         )
-        for name, dtype in GEOMETRY_LAYERS.items()
-    ]
+
+    x_raster = _layer("x")
+    y_raster = _layer("y")
+    z_raster = _layer("z")
 
     t0 = time.time()
-    rdr2geo.topo(isce3.io.Raster(fsdecode(dem_file)), *rasters)
+    rdr2geo.topo(
+        isce3.io.Raster(fsdecode(dem_file)),
+        x_raster=x_raster,
+        y_raster=y_raster,
+        height_raster=z_raster,
+    )
     print(f"  rdr2geo took {time.time() - t0:.1f} s")
 
     # Stack x / y / z into a 3-band VRT (band 1 = lon, 2 = lat, 3 = height).
-    stack = isce3.io.Raster(fsdecode(out_vrt), rasters[:3])
+    stack = isce3.io.Raster(fsdecode(out_vrt), [x_raster, y_raster, z_raster])
     stack.set_epsg(rdr2geo.epsg_out)
-    del stack, rasters
+    del stack, x_raster, y_raster, z_raster
     return out_vrt
 
 
@@ -190,9 +182,7 @@ class SpotlightGeometry:
     def reference_range(self) -> float:
         """Slant range from the antenna to the scene reference point (meters)."""
         return float(
-            np.linalg.norm(
-                self.reference_antenna_position - self.scene_reference_point
-            )
+            np.linalg.norm(self.reference_antenna_position - self.scene_reference_point)
         )
 
 

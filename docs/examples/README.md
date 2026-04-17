@@ -12,6 +12,32 @@ pip install matplotlib cartopy pyproj
 
 ## Examples
 
+### Coregistration and Interferometry
+
+Two example scripts demonstrate SLC coregistration and interferogram formation
+using different processing backends. Both share cross-correlation and polynomial
+fitting utilities from `coreg_utils.py`.
+
+#### `coregister_isce3.py` -- ISCE3 backend (stripmap)
+
+Coregisters two Capella stripmap SLCs via DEM-based geometry (rdr2geo/geo2rdr)
+plus amplitude cross-correlation refinement. Requires `isce3` and `gdal`.
+
+```bash
+python coregister_isce3.py REFERENCE.tif SECONDARY.tif [--dem-file DEM.tif]
+```
+
+#### `coregister_sarpy.py` -- sarpy backend (PFA / SICD)
+
+Coregisters two SICD SLCs (e.g. Capella PFA spotlight products) and forms an
+interferogram. Uses sarpy for I/O and point-projection geometry, scipy for
+resampling. Accepts any format sarpy can read (SICD NITF, Capella GeoTIFF, etc.).
+
+```bash
+pip install sarpy scipy matplotlib
+python coregister_sarpy.py REFERENCE.tif SECONDARY.tif [--output-dir ./coreg_sarpy]
+```
+
 ### 1. 2D Ground Track Visualization (`orbit_ground_track.py`)
 
 Visualizes the satellite ground track (orbit projected onto Earth's surface) with the image footprint.

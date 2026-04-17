@@ -1,6 +1,6 @@
 # Spotlight Phase Restoration
 
-This page explains what `coregister_spotlight.py` does and why it is a
+This page explains what `restore_spotlight_phase.py` does and why it is a
 prerequisite for interferometric processing of Capella spotlight SLCs.
 
 ## Background: spotlight deramping
@@ -81,7 +81,7 @@ given the radar grid, orbit, and a DEM: it intersects each range / azimuth
 ray with the DEM surface and writes the resulting `lon / lat / height`
 rasters.
 
-`coregister_spotlight.py` runs rdr2geo on the input SLC using the
+`restore_spotlight_phase.py` runs rdr2geo on the input SLC using the
 capella-reader → isce3 adapters (`get_radar_grid`, `get_orbit`), producing
 a 3-band geometry VRT (band 1 = longitude, band 2 = latitude, band 3 =
 height). The restoration step then reads those bands block by block,
@@ -90,7 +90,7 @@ converts `(lon, lat, height)` to ECEF via the WGS84 ellipsoid, evaluates
 
 ## Pipeline
 
-`coregister_spotlight.py` executes three steps:
+`restore_spotlight_phase.py` executes three steps:
 
 1. **DEM** — if `--dem-file` is omitted, a Copernicus DEM covering the SLC
    footprint (plus a small buffer) is downloaded via
@@ -112,10 +112,10 @@ converts `(lon, lat, height)` to ECEF via the WGS84 ellipsoid, evaluates
 
 ```bash
 # Auto-downloads a Copernicus DEM over the SLC footprint
-python docs/examples/coregister_spotlight.py SPOTLIGHT.tif
+python docs/examples/restore_spotlight_phase.py SPOTLIGHT.tif
 
 # Or provide your own DEM in EPSG:4326
-python docs/examples/coregister_spotlight.py SPOTLIGHT.tif \
+python docs/examples/restore_spotlight_phase.py SPOTLIGHT.tif \
     --dem-file my_dem.tif \
     --output-dir restore_out \
     --output SPOTLIGHT.restored.tif
