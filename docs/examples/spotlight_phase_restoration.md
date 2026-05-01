@@ -118,7 +118,7 @@ python docs/examples/restore_spotlight_phase.py SPOTLIGHT.tif
 python docs/examples/restore_spotlight_phase.py SPOTLIGHT.tif \
     --dem-file my_dem.tif \
     --output-dir restore_out \
-    --output SPOTLIGHT.restored.tif
+    --output SPOTLIGHT_restored.tif
 ```
 
 After restoration the SLC can be fed into a normal InSAR coregistration

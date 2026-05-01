@@ -14,24 +14,35 @@ pip install matplotlib cartopy pyproj
 
 ### Coregistration and Interferometry
 
-Two example scripts demonstrate SLC coregistration and interferogram formation
-using different processing backends. Both share cross-correlation and polynomial
-fitting utilities from `coreg_utils.py`.
+Example scripts demonstrate SLC coregistration and interferogram formation using different processing backends. The ISCE3-based scripts share cross-correlation and polynomial fitting utilities from `coreg_utils.py`.
 
 #### `coregister_isce3.py` -- ISCE3 backend (stripmap)
 
-Coregisters two Capella stripmap SLCs via DEM-based geometry (rdr2geo/geo2rdr)
-plus amplitude cross-correlation refinement. Requires `isce3` and `gdal`.
+Coregisters two Capella stripmap SLCs via DEM-based geometry (rdr2geo/geo2rdr) plus amplitude cross-correlation refinement. Requires `isce3` and `gdal`.
 
 ```bash
 python coregister_isce3.py REFERENCE.tif SECONDARY.tif [--dem-file DEM.tif]
 ```
 
+#### `restore_spotlight_phase.py` -- spotlight phase restoration
+
+Standalone preprocessing step for a single Capella spotlight SLC: restores the deramping phase removed by the on-ground processor so the SLC can be used in interferometric workflows. See `spotlight_phase_restoration.md` for the underlying derivation.
+
+```bash
+python restore_spotlight_phase.py SPOTLIGHT.tif [--dem-file DEM.tif]
+```
+
+#### `coregister_spotlight.py` -- ISCE3 backend (spotlight pair)
+
+End-to-end pipeline for an InSAR pair of Capella spotlight SLCs. Runs `restore_spotlight_phase.py` on both inputs and then the same rdr2geo/geo2rdr/cross-correlation pipeline as `coregister_isce3.py` on the restored products.
+
+```bash
+python coregister_spotlight.py REFERENCE.tif SECONDARY.tif [--dem-file DEM.tif]
+```
+
 #### `coregister_sarpy.py` -- sarpy backend (PFA / SICD)
 
-Coregisters two SICD SLCs (e.g. Capella PFA spotlight products) and forms an
-interferogram. Uses sarpy for I/O and point-projection geometry, scipy for
-resampling. Accepts any format sarpy can read (SICD NITF, Capella GeoTIFF, etc.).
+Coregisters two SICD SLCs (e.g. Capella PFA spotlight products) and forms an interferogram. Uses sarpy for I/O and point-projection geometry, scipy for resampling. Accepts any format sarpy can read (SICD NITF, Capella GeoTIFF, etc.).
 
 ```bash
 pip install sarpy scipy matplotlib

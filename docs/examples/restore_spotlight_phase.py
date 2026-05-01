@@ -313,13 +313,13 @@ def main() -> None:
         "--output",
         type=Path,
         default=None,
-        help="Output SLC path (defaults to <output-dir>/<stem>.restored.tif)",
+        help="Output SLC path (defaults to <output-dir>/<stem>.tif)",
     )
     args = parser.parse_args()
 
     output_dir: Path = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = args.output or output_dir / f"{args.slc.stem}.restored.tif"
+    output_file = args.output or output_dir / f"{args.slc.stem}.tif"
     t_start = time.time()
 
     print("[1/3] DEM")
